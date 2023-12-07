@@ -182,7 +182,7 @@
 
 const wrapper = document.querySelector('.mainWrapper');
 const inputEl = document.querySelector('#searchBar');
-const getButton = document.querySelector('#get');
+const selectEl = document.querySelector('#region');
 
 
 function goTo(url) {
@@ -220,15 +220,12 @@ const getCountriesData = function () {
 
 const getByName = (name) => {
 
-    wrapper.innerHTML='<img src="./load.gif" alt="load"/>'
+    wrapper.innerHTML = '<img src="./load.gif" alt="load"/>'
 
     axios.get(`https://restcountries.com/v3.1/name/${name}`)
         .then(res => {
-
-            console.log(res);
-
             if (res.status == 200) {
-                
+
                 let countryInfo = res.data;
 
 
@@ -237,7 +234,7 @@ const getByName = (name) => {
 
                 countryInfo.forEach((country) => {
                     wrapper.innerHTML += `
-            <div class="card">
+            <div class="card" onclick='goTo("${country.name.common}")'>
             <div class="flag">
             <img src="${country.flags.png}" alt="flag">
                  </div>
@@ -254,16 +251,57 @@ const getByName = (name) => {
         .catch(err => {
             wrapper.innerHTML = 'Country Not Found';
         })
-        
+
 
 }
+
+const getByRegion = (region) => {
+
+    wrapper.innerHTML = '<img src="./load.gif" alt="load"/>'
+
+    fetch(`https://restcountries.com/v3.1/region/${region}`)
+        .then(res => res.json())
+        .then(data => {
+
+            wrapper.innerHTML = '';
+            data.forEach(element => {
+
+                wrapper.innerHTML +=
+                `
+            <div class="card" onclick='goTo("${element.name.common}")'>
+            <div class="flag">
+            <img src="${element.flags.png}" alt="flag">
+                 </div>
+              <div class="info">
+                  <p>Name : ${element?.name.common}</p>
+                    <p>Capital :  ${element.capital?.[0]}</p>
+                   <p>Population : ${element.population}</p>
+                 </div>
+                   </div>`
+            });
+
+        }
+        )
+    }
+
+
 
 getCountriesData();
 
 inputEl.addEventListener('input', (e) => {
     if (e.target.value === '') {
         getCountriesData();
-    }else{
-    getByName(e.target.value)}
+    } else {
+        getByName(e.target.value)
+    }
 })
 
+selectEl.addEventListener('change', (e) => {
+    let region = e.target.value;
+
+    if (region == 'all') {
+        getCountriesData()
+    } else {
+        getByRegion(region);
+    }
+})
